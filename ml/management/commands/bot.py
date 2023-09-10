@@ -4,8 +4,8 @@ from telegram import Update
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from telegram.ext import filters, MessageHandler, ApplicationBuilder, CommandHandler, ContextTypes
-from ml.models import FatClassification
-from ml.ml_model.analyze import analyze_obesity
+from ml.models import TextTranslationResult
+from ml.ml_model.analyze import analyze
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -14,27 +14,22 @@ logging.basicConfig(
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="Отправьте данные одной строкой")
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="Send me message")
 
 
 
 async def get_emote(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     text = update.message.text
-    txt = str(text)
     loop = asyncio.get_event_loop()
-    listing = txt.split(',')
-    await context.bot.send_message(chat_id=chat_id, text=txt)
-    await context.bot.send_message(chat_id=chat_id, text = listing)
-    python_result = await loop.run_in_executor(None, FatClassification.to_model_style, listing)
-    obj = FatClassification(
-           python_result
-       )
-    mes = await loop.run_in_executor(None, analyze_obesity, python_result)
+    mes = await loop.run_in_executor(None, analyze, text)
     result = mes
-    await loop.run_in_executor(None, obj.analyze, result)
+    obj = TextTranslationResult(
+        input_text=text,
+        output_text=result
+    )
     await loop.run_in_executor(None, obj.save)
-    await context.bot.send_message(chat_id=chat_id, text=obj.nobeyesdad)
+    await context.bot.send_message(chat_id=chat_id, text=result)
 
 
 class Command(BaseCommand):

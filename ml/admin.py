@@ -2,8 +2,8 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import FatClassification
+from .models import TextTranslationResult
 
-@admin.register(FatClassification)
-class FatClassificationAdmin(admin.ModelAdmin):
+@admin.register(TextTranslationResult)
+class TextTranslationResultAdmin(admin.ModelAdmin):
     pass
